@@ -30,13 +30,14 @@ body {
 
 #cover #name #highlight1 {
     background-color: rgba(220,220,220,0.8);
-    color: black;
+    color: rgba(40,40,40,1);
     padding: 0px 8px;   
 }
 
 #cover #name #highlight2 {
     background-color: rgba(40,40,40,0.8);
     padding: 0px 8px;
+    color: rgba(220,220,220,1)
 }
 
 
