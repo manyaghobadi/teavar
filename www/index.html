@@ -1,0 +1,103 @@
+<head>
+    <meta charset="UTF-8">
+    <title>TEAVAR</title>
+    <link href="https://fonts.googleapis.com/css?family=Droid+Sans" rel="stylesheet">
+    <link rel="stylesheet" href="styles/header.css">
+    <link rel="stylesheet" href="styles/home.css">
+    <script src="https://kit.fontawesome.com/9a81ca639b.js"></script>
+</head>
+<body>
+    <header id="header">
+        <ul id="left-links">
+            <li class="link"><a href="">TEAVAR</a></li>
+        </ul>
+        <ul id="right-links">
+            <li class="link"><a href="">Home</a></li>
+            <li class="link"><a href="demo">Demo</a></li>
+        </ul>
+    </header>
+    <div id="cover">
+        <div id="intro">
+            <h1 id="name"><span id="highlight1">TEA</span><span id="highlight2">VAR</span></h1>
+            <div id="sub-name">Traffic Engineering Applying Value at Risk</div>
+            <a href="paper.pdf" id="paper-button" class="button">Read the Paper<i class="fas fa-caret-right"></i></a>
+        </div>
+    </div>
+    <div class="section">
+        <div class="inner">
+            <div class="title">Overview</div>
+            <div class="body">
+                To keep up with the continuous growth in demand, cloud providers spend millions of dollars augmenting the capacity of their wide-area backbones and devote significant effort to efficiently utilizing WAN capacity. A key challenge is striking a good balance between network utilization and availability, as these are inherently at odds; a highly utilized network might not be able to withstand unexpected traffic shifts resulting from link/node failures. We advocate a novel approach to this challenge that draws inspiration from financial risk theory: leverage empirical data to generate a probabilistic model of network failures and maximize bandwidth allocation to network users subject to an operator-specified availability target (e.g., 99.9% availability). Our approach enables network operators to strike the utilization-availability balance that best suits their goals and operational reality. We present TEAVAR (Traffic Engineering Applying Value at Risk), a system that realizes this risk management approach to traffic engineering (TE). We compare TEAVAR to state-of-the-art TE solutions through extensive simulations across many network topologies, failure scenarios, and traffic patterns, including real-world data about failures and traffic from a large service provider. Our results show that with TEAVAR, operators can support up to twice as much throughput as state-of-the-art TE schemes, at the same level of availability.
+            </div>
+        </div>
+    </div>
+    <div class="section">
+        <div class="inner">
+            <div class="title">Paper</div>
+            <div class="body">
+                    <b>TeaVaR: Striking the Right Utilization-Availability Balance in WAN Traffic Engineering</b><br>
+                    J. Bogle, N. Bhatia, M. Ghobadi, I. Menache, N. Bjorner, A. Valadarsky, M. Schapira<br>
+                    <em><a href="https://conferences.sigcomm.org/sigcomm/2019/">ACM SIGCOMM'19</a></em> (to appear)
+                    <span class="text5">[paper] [slides] [<a href="poster.pdf">poster</a>] [video] [code] [<a href="demo">demo</a>]</span>
+            </div>
+        </div>
+    </div>
+    <div class="section">
+        <div class="inner">
+            <div class="title">Demo</div>
+            <div class="body centered">
+                <img id="demo-image" src="img/demo.png">
+                <a href="demo" id="demo-button" class="button">Check out the Demo<i class="fas fa-caret-right"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="section">
+        <div class="inner">
+            <div class="title">Code</div>
+            <div class="body">
+                <object class="logo" type="image/svg+xml" data="img/github.svg" style="width: 100px">
+                    Your browser does not support SVG
+                </object>
+                <span id="github-link">Our code is available on github <a href="https://github.com/manyaghobadi/teavar">here</a></span>
+            </div>
+        </div>
+    </div>
+    <div class="section">
+        <div class="inner">
+            <div class="title">Members</div>
+            <div class="body centered">
+                <div class="affiliation">
+                    <object class="logo" type="image/svg+xml" data="img/mit.svg" style="width: 100px">
+                        Your browser does not support SVG
+                    </object>
+                    <ul class="names">
+                        <li>Manya Ghobadi</li>
+                        <li>Jeremy Bogle</li>
+                        <li>Nikhil Bhatia</li>
+                    </ul>
+                </div>
+                <div class="affiliation">
+                    <object class="logo" type="image/svg+xml" data="img/ms.svg">
+                        Your browser does not support SVG
+                    </object>
+                    <ul class="names">
+                        <li>Ishai Menache</li>
+                        <li>Nikolaj Bj&oslash;rner</li>
+                    </ul>   
+                </div>
+                <div class="affiliation">
+                    <object class="logo" type="image/svg+xml" data="img/hebrewu.svg">
+                        Your browser does not support SVG
+                    </object>
+                    <ul class="names">
+                        <li>Michael Shapira</li>
+                        <li>Asaf Valadarsky</li>
+                    </ul>
+                </div>
+            </div>  
+        </div>
+    </div>
+    <footer>
+
+    </footer>
+</body>

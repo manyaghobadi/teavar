@@ -1,0 +1,41 @@
+#header {
+    width: 100%;
+    /* height: 60px; */
+    background-image: -webkit-linear-gradient(top,#282828,#191919);
+    position: fixed;
+    top: 0;
+    /* padding-top: 15px; */
+    font-size: 16px;
+    z-index: 20;
+    line-height: 1;
+}
+#header #sections-list {
+    margin-top: 0;
+    margin-bottom: 10px;
+    padding-top: 5px;
+}
+
+
+#left-links {
+    list-style-type: none;
+    float: left;
+}
+
+#right-links {
+    list-style-type: none;
+    float: right;
+}
+
+.link {
+    float: left;
+    color: white;
+    padding-right: 20px;
+}
+.link a {
+    text-decoration: none;
+    color: white;
+}
+.link a:hover {
+    color: rgb(141, 141, 141);
+    transition: .1s all;
+}

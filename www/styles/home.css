@@ -1,0 +1,124 @@
+body {
+    margin: 0;
+    background-color: #f0f4fd;
+    font-family: "Droid Sans", sans-serif;
+}
+#cover {
+    width: 100%;
+    height: 60%;
+    background-color: rgba(41, 41, 179, 0.7);
+    background-size: cover;
+    background-attachment: fixed;
+}
+#cover #intro {
+    position: relative;
+    text-align: center;
+    top: 40%;
+    color: white;
+    font-size: 30px;
+}
+#cover #name {
+    padding-bottom: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 300px;
+    text-align: center;
+    letter-spacing: 3;
+    margin-bottom: 10px;
+    /* text-shadow: 1px 1px 1px black; */
+}
+
+#cover #name #highlight1 {
+    background-color: rgba(220,220,220,0.8);
+    color: black;
+    padding: 0px 8px;   
+}
+
+#cover #name #highlight2 {
+    background-color: rgba(40,40,40,0.8);
+    padding: 0px 8px;
+}
+
+
+#cover #intro #sub-name {
+    font-size: 25px;
+    color: #dedede;
+}
+
+
+.button {
+    font-size: 20px;
+    text-decoration: none;
+    margin-top: 20px;
+    color: white;
+    padding: 10px 15px;
+    background-color: rgba(50,50,50,0.8);
+    border-radius: 15px;
+    display: inline-block;
+}
+
+.button i {
+    position: relative;
+    top: 1px;
+    margin-left: 7px;
+}
+
+.section {
+    width: 100vw;
+    color: rgba(0,0,0,0.8);
+}
+
+.section .inner {
+    width: 80%;
+    margin: 0px auto;
+}
+
+.section .inner .title {
+    font-size: 25px;
+    width: 100%;
+    border-bottom: 1px solid rgba(0,0,0,0.2);
+    padding-bottom: 10px;
+    padding-top: 60px;
+    margin-bottom: 20px;
+}
+
+.section .inner .body {
+    line-height: 1.5;
+    display: inline-block;
+    width: 100%;
+}
+
+.centered {
+    text-align: center;
+}
+
+
+#demo-image {
+    display: block;
+    margin: 0px auto;
+    width: 80%;
+}
+
+.affiliation {
+    display: inline-block;
+    text-align: left;
+    margin: 0px 60px;
+    vertical-align: top;
+}
+
+.logo {
+    width: 200px;
+    height: 50px;
+}
+
+#github-link {
+    position: relative;
+    bottom: 15px;
+}
+
+footer {
+    height: 60px;
+    width: 100vw;
+    margin-top: 50px;
+    background-image: -webkit-linear-gradient(top,#191919,#282828);
+}
