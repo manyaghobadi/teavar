@@ -48,6 +48,10 @@ body {
 }
 
 
+#diagram {
+    width: 70%;
+}
+
 .button {
     font-size: 20px;
     text-decoration: none;

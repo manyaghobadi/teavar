@@ -1,0 +1,5 @@
+to_node     from_node   demand
+1           5           5
+2           6           8
+3           5           4
+2           1           8
