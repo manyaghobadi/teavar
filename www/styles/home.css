@@ -48,6 +48,10 @@ body {
 }
 
 
+#diagram {
+    width: 70%;
+}
+
 .button {
     font-size: 20px;
     text-decoration: none;
@@ -111,6 +115,17 @@ body {
 .logo {
     width: 200px;
     height: 50px;
+}
+
+.icon {
+    margin-right: 10px;
+}
+
+.code-type {
+    display: inline-block;
+    text-align: left;
+    margin: 0px 20px;
+    vertical-align: top;
 }
 
 #github-link {
