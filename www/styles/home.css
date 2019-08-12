@@ -117,6 +117,17 @@ body {
     height: 50px;
 }
 
+.icon {
+    margin-right: 10px;
+}
+
+.code-type {
+    display: inline-block;
+    text-align: left;
+    margin: 0px 20px;
+    vertical-align: top;
+}
+
 #github-link {
     position: relative;
     bottom: 15px;
