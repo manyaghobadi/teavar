@@ -1,0 +1,133 @@
+
+
+document.addEventListener("DOMContentLoaded", function(event) {
+    // Your code to run since DOM is loaded and ready
+var numSelected = 0
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+var simulation = d3.forceSimulation()
+    .force("link", d3
+      .forceLink().id(function(d) { return d.id; })
+      .distance(function (d) {
+        return 100;
+      })
+    )
+    .force("charge", d3.forceManyBody())
+    .force("center", d3.forceCenter(width / 2, height / 2));
+
+
+
+d3.json("data/topology.json", function(error, graph) {
+  if (error) throw error;
+
+  var link = svg.append("g")
+      .attr("class", "links")
+    .selectAll("line")
+    .data(graph.links)
+    .enter().append("line").style("stroke-width", 3);
+
+
+  var div = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+  var node = svg.append("g")
+      .attr("class", "nodes")
+    .selectAll("circle")
+    .data(graph.nodes)
+    .enter()
+    .append('g').attr("class", "wrapper")
+    .append("circle")
+      .attr("r", 9)
+      .on("click", click)
+      .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+
+  node.append("title")
+      .text(function(d) { return d.id; });
+
+  //add tooltip
+  svg.selectAll("line")
+      .on("mouseover", function(d) {
+          div.transition()
+              .duration(200)
+              .style("opacity", .9);
+          div .html("<i>p</i> = " + d.prob_failure) //+ "<br/>"  + d.close
+              .style("left", (d3.event.pageX) + "px")
+              .style("top", (d3.event.pageY - 28) + "px");
+          })
+      .on("mouseout", function(d) {
+          div.transition()
+              .duration(200)
+              .style("opacity", 0);
+          });
+
+  simulation
+      .nodes(graph.nodes)
+      .on("tick", ticked);
+
+  simulation.force("link")
+      .links(graph.links);
+
+  function ticked() {
+    link
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+  }
+});
+
+d3.select("body").on("click", function() {
+  console.log(d3.select(this))
+  // numSelected = 0
+  // d3.selectAll('circle').each(function(d) {d3.select(this).style("fill", "black")})
+});
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function dragged(d) {
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function dragended(d) {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+}
+
+function click(d) {
+  if(numSelected == 0) {
+    numSelected++
+  } else if(numSelected == 1){
+    //one node already numSelected
+    numSelected++
+
+    //TODO: show paths
+
+  } else {
+    //two nodes already selected
+    numSelected = 1
+    d3.selectAll('circle').each(function(d) {d3.select(this).style("fill", "black")})
+    console.log(d3.selectAll())
+  }
+  d3.select(this).style("fill", "steelblue")
+
+  console.log(d)
+  console.log(numSelected)
+}
+});
