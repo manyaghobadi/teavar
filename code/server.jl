@@ -139,7 +139,7 @@ function main()
     println("Listening on localhost:8080....")
     HTTP.@register(ROUTER, "POST", "/api/teavar", teavar)
     # HTTP.serve(JSONHandler, Sockets.localhost, 8080)
-    HTTP.serve(JSONHandler, Sockets.localhost, 8080)
+    HTTP.serve(JSONHandler, "128.30.92.156", 8080)
 end
 
 main()
