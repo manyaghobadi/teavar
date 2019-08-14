@@ -40,6 +40,7 @@ const SVG = styled.svg`
     }
 
     #utilizationButton {
+        position: absolute;
         padding: 5px 10px;
         border: 1px solid #AAA;
         width: 100px;
@@ -47,12 +48,14 @@ const SVG = styled.svg`
         cursor: pointer;
         background-color: #DEDEDE;
         pointer-events: auto;
+        bottom: 7px;
+        right: 7px;
     }
 
     select {
         position: absolute;
-        bottom: 8px;
-        right: 8px;
+        top: 7px;
+        left: 7px;
         -webkit-appearance: button;
         -webkit-border-radius: 2px;
         -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
@@ -72,13 +75,47 @@ const SVG = styled.svg`
     }
 `
 
+const ScenarioTable = styled.table`
+    border: 1px solid steelblue;
+    background-color: rgba(255, 255, 255, .2);
+    float: left;
+    pointer-events: auto;
+
+    th {
+        padding: 3px 10px;
+    }
+
+    tr {
+        cursor: pointer;
+    }
+
+    td {
+        padding: 5px 10px;
+        text-align: center;
+    }
+
+    .table-scroll {
+        height: 200px;
+        overflow: scroll;
+    }
+
+    .selected {
+        background-color: rgba(200, 200, 200, .6);
+    }
+`;
+
 const PathTable = styled.table`
     border: 1px solid steelblue;
     background-color: rgba(255, 255, 255, .2);
     float: right;
+    pointer-events: auto;
 
     th {
         padding: 3px 10px;
+    }
+
+    tr {
+        cursor: pointer;
     }
 
     td {
@@ -113,7 +150,7 @@ const OuterTable = styled.table`
     }
 `;
 
-let colors = ["#1abc9c", "#e74c3c", "#3498db", "#9b59b6", "#34495e", "#e67e22", "#f1c40f"];
+let colors = ["#1abc9c", "#3498db", "#9b59b6", "#34495e", "#e67e22", "#f1c40f"];
 let dashes = ["5,5", "10,10", "20, 20", "20,10,5,5,5,10", "10,10,5,10"]
 
 class ForceGraph extends Component {
@@ -142,6 +179,7 @@ class ForceGraph extends Component {
             scenarios: [],
             capacity: [],
             failure_probabilities: [],
+            linkUtilization: [],
             flowid: null,
             backFlowid: null,
             tips: [],
@@ -186,70 +224,157 @@ class ForceGraph extends Component {
             var: props.var,
             cvar: props.cvar,
             limitTraffic: true,
+            linkUtilization: [],
         }, () => {
-            let flows = {}
-            props.flows.forEach((nodes, flowid) => {
-                let tunnels = this.getTunnels(flowid, nodes[0], nodes[1]);
-                flows[flowid] = {
-                    id: flowid,
-                    src: nodes[0].toString(),
-                    dst: nodes[1].toString(),
-                    tunnels: tunnels,
-                    demand: props.demand[flowid],
-                    permissable: 1 - props.var,
-                };
-            })
-            let satisfiedDemand = [];
-            if (props.scenarios) {
-                let totalDemand = props.demand.reduce((i, j) => i + j);
-                props.scenarios.forEach((scenario, s) => {
-                    let sentTraffic = this.state.graph ? new Array(this.state.graph.links.length).fill(0) : [];
-                    let satisfied = 0;
-                    Object.values(flows).forEach((flow, f) => {
-                        let total_weight = 0;
-                        let numAvailable = 0;
-                        flow.tunnels.forEach((tunnel, t) => {
-                            total_weight += props.X[s][tunnel.id] === 1 ? this.state.allocation[f][t] : 0;
-                            numAvailable += props.X[s][tunnel.id] === 1 ? 1 : 0;
-                        });
-                        flow.tunnels.forEach((tunnel, t) => {
-
-                            let weight = 0
-                            if (props.X[s][tunnel.id] === 1) {
-                                weight = total_weight !== 0 ?
-                                        (this.state.allocation[f][t] / total_weight)  :
-                                        (1 / numAvailable);
-                            } else {
-                                weight = 0;
-                            }
-                            let congested = false;
-                            tunnel.links.forEach(link => {
-                                let ls = this.state.graph.links.filter((l, index) => index === link.index);
-                                if (ls[0] && sentTraffic[link.index] >= ls[0].capacity) {
-                                    congested = true;
-                                }
-                            })
-                            if (!congested) {
-                                tunnel.links.forEach(link => {
-                                    sentTraffic[link.index] += weight * flow.demand * flow.permissable
-                                });
-                                satisfied += weight * flow.demand * flow.permissable
-                            }
-                        })
-                    })
-                    satisfiedDemand.push(satisfied / totalDemand)
-                });
-            };
-            this.setState({
-                flows,
-                scenarioSatisfaction: satisfiedDemand,
-            }, this.updateGraph)
+            this.simulateTraffic();
+            // let flows = {}
+            // props.flows.forEach((nodes, flowid) => {
+            //     let tunnels = this.getTunnels(flowid, nodes[0], nodes[1]);
+            //     flows[flowid] = {
+            //         id: flowid,
+            //         src: nodes[0].toString(),
+            //         dst: nodes[1].toString(),
+            //         tunnels: tunnels,
+            //         demand: props.demand[flowid],
+            //         permissable: 1 - props.var,
+            //     };
+            // })
+            // let satisfiedDemand = [];
+            // if (props.scenarios) {
+            //     let totalDemand = props.demand.reduce((i, j) => i + j);
+            //     props.scenarios.forEach((scenario, s) => {
+            //         let sentTraffic = this.state.graph ? new Array(this.state.graph.links.length).fill(0) : [];
+            //         let satisfied = 0;
+            //         Object.values(flows).forEach((flow, f) => {
+            //             let total_weight = 0;
+            //             let numAvailable = 0;
+            //             flow.tunnels.forEach((tunnel, t) => {
+            //                 total_weight += props.X[s][tunnel.id] === 1 ? this.state.allocation[f][t] : 0;
+            //                 numAvailable += props.X[s][tunnel.id] === 1 ? 1 : 0;
+            //             });
+            //             flow.tunnels.forEach((tunnel, t) => {
+            //                 let weight = 0
+            //                 if (props.X[s][tunnel.id] === 1) {
+            //                     weight = total_weight !== 0 ?
+            //                             (this.state.allocation[f][t] / total_weight)  :
+            //                             (1 / numAvailable);
+            //                 } else {
+            //                     weight = 0;
+            //                 }
+            //                 let congested = false;
+            //                 tunnel.links.forEach(link => {
+            //                     // let ls = this.state.graph.links.filter((l, index) => index === link.index);
+            //                     if (sentTraffic[link.index] >= this.state.capacity[link.index]) {
+            //                         congested = true;
+            //                     }
+            //                 })
+            //                 if (!congested) {
+            //                     tunnel.links.forEach(link => {
+            //                         sentTraffic[link.index] += weight * flow.demand * flow.permissable
+            //                     });
+            //                     satisfied += weight * flow.demand * flow.permissable
+            //                 }
+            //             })
+            //         })
+            //         satisfiedDemand.push(satisfied / totalDemand)
+            //     });
+            // };
+            // this.setState({
+            //     flows,
+            //     scenarioSatisfaction: satisfiedDemand,
+            // }, this.updateGraph)
         });
     }
 
     componentDidUpdate(state) {
         // this.drawGraph()
     }
+
+    simulateTraffic() {
+        console.log(this.state);
+        let flows = {}
+        this.state.f.forEach((nodes, flowid) => {
+            flows[flowid] = {
+                id: flowid,
+                src: nodes[0].toString(),
+                dst: nodes[1].toString(),
+                demand: this.state.demand[flowid],
+                permissable: this.state.limitTraffic ? 1 - this.state.var : 1,
+            };
+        })
+        let scenarioSatisfaction = [];
+        let linkUtilization = new Array(this.state.capacity.length).fill(0);
+        if (this.state.scenarios) {
+            let totalDemand = this.state.demand.reduce((i, j) => i + j);
+            this.state.scenarios.forEach((scenario, s) => {
+                let scenarioSentTraffic = this.state.graph ? new Array(this.state.graph.links.length).fill(0) : [];
+                let satisfiedDemandForScenario = 0;
+                Object.values(flows).forEach((flow, f) => {
+                    let satisfiedDemandForFlow = 0;
+                    let flowTunnels = this.getTunnels(flow.id, flow.src, flow.dst, s);
+                    flowTunnels.forEach((tunnel, t) => {
+                        let weight = tunnel.weight;
+                        let sent = weight * flow.demand * flow.permissable;
+
+                        let congested = false;
+                        let minSpace = Math.max(...this.state.capacity);
+                        tunnel.links.forEach(link => {
+                            minSpace = Math.min(minSpace, this.state.capacity[link.index] - scenarioSentTraffic[link.index])
+                            if (scenarioSentTraffic[link.index] + sent > this.state.capacity[link.index]) {
+                                congested = true;
+                            }
+                        })
+
+                        if (!congested) {
+                            tunnel.links.forEach(link => {
+                                scenarioSentTraffic[link.index] += sent;
+                                if (s === this.state.scenario) {
+                                    linkUtilization[link.index] += sent;
+                                }
+                            });
+                            if (s === this.state.scenario) {
+                                tunnel.sent = sent;
+                                satisfiedDemandForFlow += sent;
+                            }
+                            satisfiedDemandForScenario += sent;
+                        } else if (minSpace > 0){
+                            sent = minSpace;
+                            tunnel.links.forEach(link => {
+                                scenarioSentTraffic[link.index] += sent;
+                                if (s === this.state.scenario) {
+                                    linkUtilization[link.index] += weight * flow.demand * flow.permissable;
+                                    // TODO 
+                                    // linkUtilization[link.index] += sent;
+                                }
+                            });
+                            if (s === this.state.scenario) {
+                                tunnel.sent = sent;
+                                satisfiedDemandForFlow += sent;
+                            }
+                            satisfiedDemandForScenario += sent;
+                        }
+                    })
+                    if (s === this.state.scenario) {
+                        flow.satisfied = satisfiedDemandForFlow;
+                        flow.tunnels = flowTunnels;
+                    }
+                })
+                scenarioSatisfaction.push(satisfiedDemandForScenario / totalDemand)
+            });
+        };
+        this.setState({
+            flows,
+            scenarioSatisfaction,
+            linkUtilization,
+        }, () => {
+            this.updateGraph();
+            this.changeTunnel(0);
+        });
+    }
+
+    // simulateScenario(s) {
+    //     return flows, satifiedDemand, 
+    // }
 
     dragstarted(d) {
       if (!d3.event.active) this.state.simulation.alphaTarget(0.3).restart();
@@ -268,32 +393,33 @@ class ForceGraph extends Component {
       d.fy = null;
     }
 
+    handleUtilization(opacity) {
+        this.setState({
+            showUtilization: opacity,
+        }, this.updateGraph)
+    }
+    
     handleScenario(scenario) {
         let downLinks = [];
-        this.state.scenarios[scenario].forEach((scenario, i) => {
-            if (!scenario) {
+        this.simulateTraffic();
+        this.state.scenarios[scenario].forEach((s, i) => {
+            if (!s) {
                 downLinks.push({src: String(this.state.links[i][0]), dst: String(this.state.links[i][1])});
-                downLinks.push(this.getBackLink(this.state.links[i]));
             }
         });
         this.setState({
             downLinks: downLinks,
             scenario: scenario,
         }, () => {
-            let flows = {}
-            this.state.f.forEach((nodes, flowid) => {
-                let tunnels = this.getTunnels(flowid, nodes[0], nodes[1]);
-                flows[flowid] = {
-                    id: flowid,
-                    src: nodes[0].toString(),
-                    dst: nodes[1].toString(),
-                    tunnels: tunnels,
-                    demand: this.state.demand[flowid],
-                };
-            })
-            this.setState({
-                flows,
-            }, () => this.showUtilization(this.state.showUtilization))
+            this.simulateTraffic();
+        });
+    }
+
+    handleLimit(bool) {
+        this.setState({
+            limitTraffic: bool,
+        }, () => {
+            this.simulateTraffic();
         });
     }
 
@@ -314,7 +440,7 @@ class ForceGraph extends Component {
         })
         forwardLinks.style("stroke-opacity", .6);
         forwardLinks.style("stroke", color);
-        backLinks.style("stroke-opacity", .6);
+        backLinks.style("stroke-opacity", 0);
         backLinks.style("stroke", color);
     }
 
@@ -324,7 +450,7 @@ class ForceGraph extends Component {
     }
 
     dashLinks(links, dash, animate){
-        clearInterval(this.dashInterval);
+        // clearInterval(this.dashInterval);
         let forwardLinks = d3.selectAll('line').filter((d) => {
             let filter = false;
             links.forEach(link => {
@@ -341,15 +467,41 @@ class ForceGraph extends Component {
         })
         forwardLinks.style("stroke-opacity", 1);
         forwardLinks.style("stroke-dasharray", dash);
+        // var offset = 1;
+        // if (animate) {
+        //     this.dashInterval = setInterval(function() {
+        //         forwardLinks.style('stroke-dashoffset', offset);
+        //         offset -= 1; 
+        //     }, 50);
+        // }
+        // backLinks.style("stroke-opacity", 0);
+        // backLinks.style("stroke-dasharray", dash);
+        forwardLinks.attr('marker-end','url(#arrowhead)')
+    }
+
+    animateLinks(links){
+        clearInterval(this.dashInterval);
+        let forwardLinks = d3.selectAll('line').filter((d) => {
+            let filter = false;
+            links.forEach(link => {
+                if (link.src === d.source.id && link.dst === d.target.id) { filter = true }
+            })
+            return filter;
+        })
+        let backLinks = d3.selectAll('line').filter((d) => {
+            let filter = false;
+            links.forEach(link => {
+                if (link.dst === d.source.id && link.src === d.target.id) { filter = true }
+            })
+            return filter;
+        })
+        forwardLinks.style("stroke-opacity", 1);
         var offset = 1;
-        if (animate) {
-            this.dashInterval = setInterval(function() {
-                forwardLinks.style('stroke-dashoffset', offset);
-                offset -= 1; 
-            }, 50);
-        }
+        this.dashInterval = setInterval(function() {
+            forwardLinks.style('stroke-dashoffset', offset);
+            offset -= 1; 
+        }, 50);
         backLinks.style("stroke-opacity", 0);
-        backLinks.style("stroke-dasharray", dash);
         forwardLinks.attr('marker-end','url(#arrowhead)')
     }
 
@@ -373,14 +525,14 @@ class ForceGraph extends Component {
         return ret
     }
 
-    getTunnels(f, node1, node2) {
+    getTunnels(f, node1, node2, s) {
         let allTunnels = []
         let tunnels = this.state.Tf[f];
         let total_weight = 0;
         let numAvailable = 0;
         tunnels.forEach((tunnel, t) => {
-            total_weight += this.state.X[this.state.scenario][tunnel - 1] === 1 ? this.state.allocation[f][t] : 0;
-            numAvailable += this.state.X[this.state.scenario][tunnel - 1] === 1 ? 1 : 0;
+            total_weight += this.state.X[s][tunnel - 1] === 1 ? this.state.allocation[f][t] : 0;
+            numAvailable += this.state.X[s][tunnel - 1] === 1 ? 1 : 0;
         });
 
         tunnels.forEach((tunnel, t) => {
@@ -389,15 +541,13 @@ class ForceGraph extends Component {
                 availability += prob * this.state.X[s][tunnel - 1];
             })
             let weight = 0
-            if (this.state.X[this.state.scenario][tunnel - 1] === 1) {
+            if (this.state.X[s][tunnel - 1] === 1) {
                 weight = total_weight !== 0 ?
                         (this.state.allocation[f][t] / total_weight)  :
                         (1 / numAvailable);
             } else {
                 weight = 0;
             }
-
-
             let edges_used = this.state.T[tunnel - 1]
             let links = [];
             edges_used.forEach(edge => {
@@ -407,14 +557,15 @@ class ForceGraph extends Component {
                     "index": edge - 1,
                 });
             });
-            allTunnels.push({
-                links,
-                "allocation": this.state.allocation[f][t],
-                "weight": weight,
-                "sent": this.state.demand[f] * weight,
-                "availability": Math.round(availability * 1000000) / 1000000,
-                "id": (tunnel - 1),
-            })
+            if (weight > 0) {
+                allTunnels.push({
+                    links,
+                    "allocation": this.state.allocation[f][t],
+                    "weight": weight,
+                    "availability": Math.round(availability * 1000000) / 1000000,
+                    "id": (tunnel - 1),
+                })
+            }
         })
         return allTunnels
     }
@@ -461,14 +612,14 @@ class ForceGraph extends Component {
         d3.selectAll('line').each(function(d) {d3.select(this).style("stroke", "#888")});
         d3.selectAll('line').attr('marker-end','');
         d3.selectAll('circle').each(function(d) {d3.select(this).style("fill", "lightgrey")});
-        d3.selectAll(".aEnd").style("opacity", this.state.showUtilization);
         
         this.state.secondaryTunnels.forEach((tunnel, i) => {
-            // this.dashLinks(tunnel, "2,2", false);
-            this.colorLinks(tunnel, "#bbb");
+            this.dashLinks(tunnel, "5,5", false);
+            this.colorLinks(tunnel, colors[i]);
         })
+        // this.dashLinks(this.state.dashLinks, "5,5", true);
+        this.animateLinks(this.state.dashLinks);
         this.colorNodes(this.state.secondaryNodes, "#bbb");
-        this.dashLinks(this.state.dashLinks, "5,5", true);
         this.colorNodes(this.state.colorNodes, "#aaa");
 
         d3.selectAll("circle").filter((c, i) => (c.id === this.state.firstSelected || c.id === this.state.secondSelected)).style("fill", "steelblue");
@@ -476,10 +627,11 @@ class ForceGraph extends Component {
             this.addTip(tip.id, tip.line1, tip.line2);
         })
 
-        if (this.state.firstSelected === null && this.state.secondSelected === null) {
+        if (this.state.firstSelected === null) {
             this.resetColors();
         }
         this.colorLinks(this.state.downLinks, "red");
+        this.showUtilization(this.state.showUtilization);
     }
 
     resetColors() {
@@ -522,50 +674,23 @@ class ForceGraph extends Component {
     }
 
     showUtilization(opacity) {
-        let linkTraffic = new Array(this.state.graph.links.length).fill(0);
-        for (let i = 0; i <= linkTraffic.length - 1; i++) {
-            Object.values(this.state.flows).forEach(flow => {
-                flow.tunnels.forEach(tunnel => {
-                    tunnel.links.forEach(link => {
-                        if (link.index === i) { linkTraffic[i] += tunnel.weight * flow.demand * flow.permissable }
-                    })
-                })
-            })
-        }
-
+        let linkTraffic = this.state.linkUtilization;
         for (let i = 0; i <= linkTraffic.length - 1; i++) {
             let linklabel = d3.selectAll(".aEnd").filter(function (c, j) { return (j === i)});
-            linklabel.html(`${Math.round((linkTraffic[i] / linklabel.data()[0].capacity) * 10000) / 100}%`);
-            if (linkTraffic[i] / linklabel.data()[0].capacity > 1) {
+            linklabel.html(`${Math.round((linkTraffic[i] / this.state.capacity[i]) * 100) / 1}%`);
+            if (linkTraffic[i] / this.state.capacity[i] > 1) {
                 linklabel.style("fill", "red")
             } else {
                 linklabel.style("fill", "black")
             }
-
         }
-
-        this.setState({
-            linkTraffic: linkTraffic,
-            showUtilization: opacity,
-        }, this.updateGraph);
-    }
-
-    limitTraffic(bool) {
-        let flows = this.state.flows;
-        let permissable = bool ? 1 - this.state.var : 1;
-        Object.values(flows).forEach(flow => {
-            flow.permissable = permissable
-        })
-        this.setState({
-            limitTraffic: bool,
-            flows: flows,
-        }, this.updateGraph);
+        d3.selectAll(".aEnd").style("opacity", opacity);
     }
 
     changeTunnel(tunnelIndex) {
         let flowid = this.state.flowid;
         let flow = this.state.flows[flowid];
-        let sent = flowid !== null ? (flow.tunnels[tunnelIndex].weight * flow.demand * flow.permissable) : 0;
+        let sent = flowid !== null ? (flow.tunnels[tunnelIndex].sent) : 0;
         let tunnels = flowid !== null ? flow.tunnels : [];
         let dashLinks = flowid !== null ? tunnels[tunnelIndex].links : [];
         let colorNodes = flowid !== null ? this.getTunnelNodes(tunnels[tunnelIndex]) : [];
@@ -579,25 +704,41 @@ class ForceGraph extends Component {
         };
         let backFlowid = this.state.backFlowid;
         let backFlow = this.state.flows[backFlowid]
-        let sentBack = backFlowid !== null ? (backFlow.tunnels[tunnelIndex].weight * backFlow.demand) : 0;
+        // let sentBack = backFlowid !== null ? (backFlow.tunnels[tunnelIndex].weight * backFlow.demand) : 0;
+        let tips = []
+        if (this.state.numSelected == 2) {
+            if (this.state.firstSelected != null) {
+                tips.push({
+                    id: this.state.firstSelected,
+                    line1: `Node: ${this.state.firstSelected}`,
+                    line2: `Sent: ${sent}`
+                });
+            }
+            if (this.state.secondSelected != null) {
+                tips.push({
+                    id: this.state.secondSelected,
+                    line1: `Node: ${this.state.secondSelected}`,
+                    line2: `Received: ${sent}`,
+                });
+            }
+        } else if (this.state.numSelected == 1) {
+            let [demandedTo, demandedFrom] = this.getNodeDemand(this.state.firstSelected);
+            demandedTo = this.state.limitTraffic ? (1 - this.state.var) * demandedTo : demandedTo;
+            demandedFrom = this.state.limitTraffic ? (1 - this.state.var) * demandedFrom : demandedFrom;
+            tips.push({
+                id: this.state.firstSelected,
+                line1: `Sent: ${demandedFrom}`,
+                line2: `Received ${demandedTo}`,
+            })
+        }
+       
         this.setState({
             tunnelIndex,
             dashLinks,
             colorNodes,
             secondaryTunnels,
             secondaryNodes,
-            tips: [
-                {
-                    id: this.state.firstSelected,
-                    line1: `Node: ${this.state.firstSelected}`,
-                    line2: `Sent: ${sent}`,
-                },
-                {
-                    id: this.state.secondSelected,
-                    line1: `Node: ${this.state.secondSelected}`,
-                    line2: `Received: ${sent}`,
-                },
-            ],
+            tips,
         }, this.updateGraph);
     }
 
@@ -611,10 +752,12 @@ class ForceGraph extends Component {
         return [demandedTo, demandedFrom]
     }
 
+
     click(d) {
-      if(this.state.numSelected === 0 || this.state.numSelected === 2) {
+      if (this.state.numSelected === 0 || this.state.numSelected === 2) {
         // document.removeEventListener("keydown", this.arrowPress, false);
         let [demandedTo, demandedFrom] = this.getNodeDemand(d.id);
+        let permissable = this.state.limitTraffic ? 1 - this.state.var : 1;
         this.setState({
             numSelected: 1,
             firstSelected: d.id,
@@ -622,11 +765,14 @@ class ForceGraph extends Component {
             showPaths: false,
             dashLinks: [],
             colorNodes: [],
+            secondaryTunnels: [],
+            secondaryTunnels: [],
+            flowid: null,
             tips: [
                 {
                     id: d.id,
-                    line1: `Sent: ${demandedFrom}`,
-                    line2: `Received ${demandedTo}`,
+                    line1: `Sent: ${demandedFrom * permissable}`,
+                    line2: `Received ${demandedTo * permissable}`,
                 }
             ],
         }, this.updateGraph);
@@ -881,23 +1027,27 @@ class ForceGraph extends Component {
     //     console.log(d3.select("line"))
     // }
     let path_info;
-    if (this.state.flowid) {
+    if (this.state.flowid != null) {
         path_info = this.state.flows[this.state.flowid].tunnels.map((tunnel, i) => {
-            return <tr className={i === this.state.tunnelIndex ? "selected" : ""} key={i}>
+            return tunnel.weight > 0 ? <tr
+                        className={i === this.state.tunnelIndex ? "selected" : ""}
+                        onClick={() => this.changeTunnel(i)}
+                        key={i}
+                    >
                         <td x="0">Tunnel {i}</td>
                         <td x="50">{tunnel.weight}</td>
                         <td x="80">{tunnel.availability}</td>
-                    </tr>
-        })
+                    </tr> : <tr></tr>
+        });
     }
 
     let limitButton = this.state.limitTraffic ?
-                            <div id="limitButton" onClick={() => this.limitTraffic(false)}>Unlimit</div> :
-                            <div id="limitButton" onClick={() => this.limitTraffic(true)}>Limit</div>
+                            <div id="limitButton" onClick={() => this.handleLimit(false)}>Unlimit</div> :
+                            <div id="limitButton" onClick={() => this.handleLimit(true)}>Limit</div>
 
     let utilizationButton = this.state.showUtilization === 0 ?
-                            <div id="utilizationButton" onClick={() => this.showUtilization(.6)}>Utilization</div> :
-                            <div id="utilizationButton" onClick={() => this.showUtilization(0)}>Off</div>
+                            <div id="utilizationButton" onClick={() => this.handleUtilization(.6)}>Utilization</div> :
+                            <div id="utilizationButton" onClick={() => this.handleUtilization(0)}>Off</div>
 
     let key = 0;
     let demand = [];
@@ -910,7 +1060,6 @@ class ForceGraph extends Component {
     let totalSatisfied = 0;
     let totalDemand = 0;
 
-    let sentTraffic = this.state.graph ? new Array(this.state.graph.links.length).fill(0) : [];
     for (let i = 1; i <= parseInt(this.state.num_nodes); i++) {
         thead.push(<th className="border-bottom" key={key++}>{i}</th>)
         let demandRow = [];
@@ -922,31 +1071,13 @@ class ForceGraph extends Component {
             let satisfiedDemand = 0
             Object.values(this.state.flows).forEach((flow, f) => {
                 if (flow.src === i.toString() && flow.dst === j.toString()) {
+                    satisfiedDemand = flow.satisfied;
                     d = flow.demand;
-                    flow.tunnels.forEach((tunnel, t) => {
-                        sentDemand += tunnel.sent
-                        let congested = false;
-                        tunnel.links.forEach(link => {
-                            let ls = this.state.graph.links.filter((l, index) => index === link.index);
-                            if (ls[0] && sentTraffic[link.index] >= ls[0].capacity) {
-                                congested = true;
-                                console.log("CONGESTION")
-                            } else {
-
-                            }
-                        })
-                        if (!congested) {
-                            tunnel.links.forEach(link => {
-                                sentTraffic[link.index] += tunnel.weight * flow.demand * flow.permissable;
-                            });
-                            satisfiedDemand += tunnel.weight * flow.demand * flow.permissable;
-                        }
-                    })
                 }
             })
-            demandRow.push(<td>{d === "-" ? d : Math.round(d * 100)/100}</td>)
-            sentRow.push(<td>{sentDemand === 0 ? "-" : Math.round(satisfiedDemand * 100)/100}</td>)
-            satisfiedRow.push(<td>{d === "-" ? 0 : `${Math.round((satisfiedDemand * 100)/ d)}%`}</td>)
+            demandRow.push(<td>{d === "-" ? d : Math.round(d * 10000)/10000}</td>)
+            sentRow.push(<td>{satisfiedDemand === 0 ? "-" : Math.round(satisfiedDemand * 100000)/100000}</td>)
+            satisfiedRow.push(<td>{d === "-" ? "-" : `${Math.round((satisfiedDemand * 10000)/ d) / 100}%`}</td>)
             totalSatisfied += satisfiedDemand;
             totalDemand += d === "-" ? 0 : d;
         }
@@ -962,15 +1093,31 @@ class ForceGraph extends Component {
     satisfied.push(<tr key={key++}><th></th>{thead}</tr>)
     satisfied.push(satisfiedRows)
 
+    // let scenarios;
+    // if (this.state.scenarios && this.state.scenarioSatisfaction) {
+    //     scenarios = this.state.scenarios.map((scenario, i) => {
+    //         return (<option
+    //                 key={i}
+    //                 value={i}>{`Scenario ${i} (${Math.round(this.state.probabilities[i] * 1000000) / 10000}%)
+    //                             (${Math.round((this.state.scenarioSatisfaction[i]) * 1000000) / 10000})`}
+    //                 </option>)
+    //     })
+    // }
+
+
     let scenarios;
     if (this.state.scenarios && this.state.scenarioSatisfaction) {
         scenarios = this.state.scenarios.map((scenario, i) => {
-            return (<option
-                    key={i}
-                    value={i}>{`Scenario ${i} (${Math.round(this.state.probabilities[i] * 1000000) / 10000}%)
-                                (${Math.round((this.state.scenarioSatisfaction[i]) * 1000000) / 10000})`}
-                    </option>)
-        })
+            return <tr
+                        className={i === this.state.scenario ? "selected" : ""}
+                        onClick={() => this.handleScenario(i)}
+                        key={i}
+                    >
+                        <td x="0">Scenario {i}</td>
+                        <td x="50">{Math.round(this.state.probabilities[i] * 1000000) / 10000}%</td>
+                        <td x="80">{Math.round((this.state.scenarioSatisfaction[i]) * 1000000) / 10000}%</td>
+                    </tr>
+        });
     }
 
     let cvar;
@@ -998,13 +1145,30 @@ class ForceGraph extends Component {
             <foreignObject x="0" y="0" width="100%" height="100%" pointerEvents="none">
                 { limitButton }
             </foreignObject>
-            <foreignObject x="7" y="7" width="100%" height="100%" pointerEvents="none">
+            <foreignObject x="0" y="0" width="100%" height="100%" pointerEvents="none">
                 { utilizationButton }
             </foreignObject>
-            <foreignObject x="0" y="0" width="100%" height="100%" pointerEvents="none">
+            {/* <foreignObject x="0" y="0" width="100%" height="100%" pointerEvents="none">
                 <select onChange={e => this.handleScenario(e.target.value)} value={this.state.scenario}>
                     { scenarios }
                 </select>
+            </foreignObject> */}
+            
+            <foreignObject x="0" y="0" width="100%" height="100%" pointerEvents="none" style={{"padding": "14px"}}>
+            {this.state.scenarios && this.state.scenarioSatisfaction &&
+                <ScenarioTable>
+                <div className="table-scroll">
+                    <tbody>
+                        <tr>
+                            <th></th>
+                            <th>availability</th>
+                            <th>demand satisfied</th>
+                        </tr>
+                        { scenarios }
+                    </tbody>
+                </div>
+                </ScenarioTable>
+            }
             </foreignObject>
             {this.state.showPaths &&
                 <foreignObject x="0" y="0" width="100%" height="100%" pointerEvents="none" style={{"padding": "14px"}}>

@@ -52,7 +52,7 @@ class App extends Component {
                 inputs: {
                     topology: "Custom",
                     demand: "1",
-                    path: "SMORE",
+                    path: "ED",
                     beta: ".9",
                     cutoff: ".0001",
                     k: "4",

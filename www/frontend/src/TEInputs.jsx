@@ -121,8 +121,8 @@ class TEInputs extends Component {
                   <div className="input_label">Paths</div>
                   <form>
                   <select name="dropdown" onChange={e => this.props.handleTEInput(e.target.value, "path")}>
-                      <option value="SMORE" default>Oblivious</option>
                       <option value="ED" default>ED</option>
+                      <option value="SMORE">Oblivious</option>
                       <option value="ksp_2">KSP_2</option>
                       <option value="ksp_4">KSP_4</option>
                       <option value="ksp_6">KSP_6</option>
