@@ -13,7 +13,7 @@ function getThroughputGuarantees(x_vals,
                                  iterations;
                                  plot=true,
                                  dirname="./data/raw/guarantees/")
-
+    env = Gurobi.Env()
     k = 20
     downscale_capacity = 1
     downscale_demand = 1
@@ -63,7 +63,7 @@ function getThroughputGuarantees(x_vals,
                     probs = scenario_probs_all[t][i]
                     demand, flows = readDemand("$(topology)/demand", length(nodes), d, scale=1, downscale=downscale_demand, matrix=true)
                     T, Tf, g = getTunnels(nodes, links, capacity, flows, k, edge_disjoint=false)
-                    var, cvar, a = TEAVAR(links, capacity, flows, demand, b, k, T, Tf, scenarios, probs)
+                    var, cvar, a = TEAVAR(env, links, capacity, flows, demand, b, k, T, Tf, scenarios, probs)
                     allowed = demand .* (1-var)
                     beta_satisfied += sum(allowed)/sum(demand)
                     
