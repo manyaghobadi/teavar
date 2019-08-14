@@ -97,8 +97,8 @@ class TEInputs extends Component {
                   <div className="input_label">Topology</div>
                   <form>
                   <select name="dropdown" onChange={e => this.props.handleTEInput(e.target.value, "topology")}>
-                      <option value="Custom" default>Small Net</option>
-                      <option value="B4">B4</option>
+                      <option value="B4" default>B4</option>
+                      <option value="Custom">Small Net</option>
                       <option value="IBM">IBM</option>
                       <option value="Abilene">Abilene</option>
                   </select>

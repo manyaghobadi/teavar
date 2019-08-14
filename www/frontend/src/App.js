@@ -50,7 +50,7 @@ class App extends Component {
             login: false,
             te: {
                 inputs: {
-                    topology: "Custom",
+                    topology: "B4",
                     demand: "1",
                     path: "ED",
                     beta: ".9",
