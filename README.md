@@ -1,4 +1,5 @@
-## [Traffic Engineering Applying Value at Risk](https://teavar.csail.mit.edu)
+<img src="www/img/logo.png" alt="teavar logo" style="float: left; margin-right: 10px;" /><br/><br/><br/><br/><br/><br/>
+## [Traffic Engineering Applying Value at Risk](http://teavar.csail.mit.edu)
 
 TEAVAR is a traffic engineering scheme that balances utilization and availability to provide bandwidth guarantees at a desired SLA. This codebase also includes a simulation framework that was used to test TEAVAR, as well as implementations of other traffice engineering algorithms in Julia.
 ## Getting started
@@ -13,7 +14,11 @@ TEAVAR is a traffic engineering scheme that balances utilization and availabilit
     julia
     ```
 
-3. Switch to JuMP version ------:
+3. Install [JuMP](https://github.com/JuliaOpt/JuMP.jl) version v0.18.5 using the Julia REPL:
+    ```
+    julia> ]
+    (v1.0) pkg>add JuMP@0.18.5 
+    ```
   
 4. Include certain files using:
     ```
@@ -22,9 +27,30 @@ TEAVAR is a traffic engineering scheme that balances utilization and availabilit
     
 Note: Most TE algorithms in this codebase are implemented as Linear Programs and require the [Gurobi](http://www.gurobi.com/) solver.
 
-### Outline
 
-**Data**
+**Using Pre-built binaries:**
+
+Instead of installing Julia and using the Julia REPL to run different files, we have compiled the codebase into binaries available on [Mac](http://teavar.csail.mit.edu/builds/mac) and [Linux](http://teavar.csail.mit.edu/builds/mac). To install these go to our homepage or follow the links above.
+
+1. Install the binary for your operating system
+
+2. Unzip the file
+```
+tar -xvf linuxbuild.tar.gz
+```
+
+```
+unzip maxbuild.zip
+```
+
+3. Run the file teavar. Add -help or -h for more information on accepted parameters
+```
+./teavar -help
+```
+
+## Outline:
+
+**Data:**
 All data used for TEAVAR evaluations is in the data folder. Each folder contains a topology. A topology must include 3 files.
 
 1. nodes.txt
@@ -34,17 +60,17 @@ All data used for TEAVAR evaluations is in the data folder. Each folder contains
 3. demand.txt
     A set of demands in matrix form or list form. (See data/Custom/demand.txt for list form)
 
-**Results**
+**Results:**
 Results from experiments are saved in data/raw. Each experiment has its own folder in data/raw that contains a counter and saves each experiment run results in a folder with the counter number. Results used in the paper have been moved from data/raw to gnuplot/data. 
 
-**Plots**
+**Plots:**
 Data for plots used in TEAVAR can be found in the gnuplot/data folder. All plotting code is also in gnuplot folder (gnuplot/*.gp) and each plotting file outputs plots to gnuplot/plots.
 
 Gnuplot can be installed on OSX using homebrew (```brew install gnuplot```) or linux using apt (```apt get gnuplot```). More information on gnuplot can be [found on the gnuplot website](http://www.gnuplot.info/).
 
-**TE Schemes**
+**TE Schemes:**
 All TE schemes (mostly case as linear programs) can be found by name in the Algorithms folder.
 
 
 ## Credits
-See the [list contributors](https://teavar.csail.mit.edu).
+See the [list contributors](http://teavar.csail.mit.edu).
