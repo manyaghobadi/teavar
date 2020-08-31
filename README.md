@@ -30,7 +30,7 @@ Note: Most TE algorithms in this codebase are implemented as Linear Programs and
 
 **Using Pre-built binaries:**
 
-Instead of installing Julia and using the Julia REPL to run different files, we have compiled the codebase into binaries available on [Mac](http://teavar.csail.mit.edu/builds/mac) and [Linux](http://teavar.csail.mit.edu/builds/mac). To install these go to our homepage or follow the links above.
+Instead of installing Julia and using the Julia REPL to run different files, we have compiled the codebase into binaries available on [Mac](http://teavar.csail.mit.edu/builds/osxbuild.zip) and [Linux](http://teavar.csail.mit.edu/builds/linuxbuild.tar.gz). To install these go to our homepage or follow the links above.
 
 1. Install the binary for your operating system
 
