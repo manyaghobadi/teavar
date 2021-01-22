@@ -1,3 +1,10 @@
+import Pkg
+Pkg.add("LightGraphs")
+Pkg.add("Compose")
+Pkg.add("GraphPlot")
+Pkg.add("Cairo")
+Pkg.add("Fontconfig")
+
 using LightGraphs, Compose, GraphPlot, Cairo, Fontconfig
 
 include("./parsers.jl")

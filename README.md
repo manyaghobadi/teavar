@@ -22,9 +22,11 @@ TEAVAR is a traffic engineering scheme that balances utilization and availabilit
   
 4. Include certain files using:
     ```
-    include("./<filename>")
+    include("./main.jl")
     ```
-    
+
+main.jl is the main entrypoint but you can also include specific files invidually to run specific experiments
+
 Note: Most TE algorithms in this codebase are implemented as Linear Programs and require the [Gurobi](http://www.gurobi.com/) solver.
 
 
@@ -37,10 +39,6 @@ Instead of installing Julia and using the Julia REPL to run different files, we 
 2. Unzip the file
 ```
 tar -xvf linuxbuild.tar.gz
-```
-
-```
-unzip maxbuild.zip
 ```
 
 3. Run the file teavar. Add -help or -h for more information on accepted parameters

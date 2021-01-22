@@ -1,3 +1,7 @@
+import Pkg
+Pkg.add("DelimitedFiles")
+Pkg.add("LightGraphs")
+
 using DelimitedFiles, LightGraphs
 
 ####################################################################################
@@ -5,9 +9,10 @@ using DelimitedFiles, LightGraphs
 ####################################################################################
 
 function nextRun(dir)
+    println("Output written to ", dir)
     dir = joinpath(@__DIR__, "./$dir")
     if isfile("$(dir)/counter.txt") == false
-        mkdir("$(dir)")
+        mkpath("$(dir)")
         writedlm("$(dir)/counter.txt", "1")
     end
     c = Int(readdlm("$(dir)/counter.txt")[1])

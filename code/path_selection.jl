@@ -1,3 +1,8 @@
+import Pkg
+Pkg.add("DelimitedFiles")
+Pkg.add("ProgressMeter")
+Pkg.add("PyPlot")
+
 using DelimitedFiles, ProgressMeter, PyPlot
 
 include("./util.jl")

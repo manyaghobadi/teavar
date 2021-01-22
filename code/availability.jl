@@ -1,3 +1,9 @@
+import Pkg
+Pkg.add("DelimitedFiles")
+Pkg.add("ProgressMeter")
+Pkg.add("PyPlot")
+Pkg.add("Gurobi")
+
 using DelimitedFiles, ProgressMeter, PyPlot, Gurobi
 
 include("./util.jl")

@@ -1,3 +1,9 @@
+import Pkg
+Pkg.add("DelimitedFiles")
+Pkg.add("ProgressMeter")
+Pkg.add("Distributions")
+Pkg.add("Combinatorics")
+
 using Distributions, DelimitedFiles, ProgressMeter, Combinatorics
 
 ####################################################################################

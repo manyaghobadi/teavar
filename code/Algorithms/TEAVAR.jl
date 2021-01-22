@@ -1,3 +1,7 @@
+import Pkg
+Pkg.add("JuMP")
+Pkg.add("Gurobi")
+
 include("../util.jl")
 
 using JuMP, Gurobi

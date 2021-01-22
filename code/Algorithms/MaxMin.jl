@@ -1,3 +1,7 @@
+import Pkg
+Pkg.add("JuMP")
+Pkg.add("Gurobi")
+
 using JuMP, Gurobi
 
 function printAllocations(a, edges, T, Tf)

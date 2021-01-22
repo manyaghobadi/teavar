@@ -1,3 +1,5 @@
+import Pkg
+Pkg.add("ArgParse")
 using ArgParse
 
 include("./scenario_coverage.jl")
@@ -49,10 +51,12 @@ end
 Base.@ccallable function julia_main()::String
     parsed_args = parse_commandline()
 
-    plot = parsed_args["plot"]
-    experiment = parsed_args["experiment"]
-    # plot = true
-    # experiment = "availability"
+    println("Asking for inputs. Press enter for default values\n")
+
+    experiment = parsed_args["experiment"] !=  nothing ? parsed_args["experiment"] : readInput("Experiment (scenario_coverage): ", "scenario_coverage", String)
+    plot = parsed_args["plot"] || readInput("Plot results? (true): ", true, Bool)
+
+    println("\nRunning experiment [", experiment, "] with plotting [", plot, "]...")
     if experiment == "scenario_coverage"
         shape = readInput("Weibull shape (0.8): ", 0.8, Float64)
         scale = readInput("Weibull scale (0.0001): ", 0.0001, Float64)
@@ -130,4 +134,4 @@ Base.@ccallable function julia_main()::String
     return "...Complete"
 end
 
-# julia_main()
+julia_main()

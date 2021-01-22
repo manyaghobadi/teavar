@@ -1,5 +1,8 @@
-using JuMP, Gurobi
+import Pkg
+Pkg.add("JuMP")
+Pkg.add("Gurobi")
 
+using JuMP, Gurobi
 
 function SMORE(env, edges, capacity, flows, demand, T, Tf)
 
