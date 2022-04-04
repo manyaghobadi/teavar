@@ -90,7 +90,7 @@ Base.@ccallable function julia_main()::String
         # paths = readInput("Paths (SMORE): ", "SMORE", String)
         availabilityPlot(algorithms, topologies, demand_downscales, num_demands, iterations, cutoff, start, step, finish, weibull_scale=weibull_scale, paths="KSP", k=12, plot=plot)
     elseif experiment == "cutoff_error"
-        topology = readInput("Topology (B4): ", "B4", String) 
+        topology = readInput("Topology (B4): ", "B4", String)
         cutoffs = map(i -> parse(Float64, i), split(readInput("Cutoffs (.0001,.00001,.000001,.0000001): ", ".0001,.00001,.000001,.0000001", String), ","))
         num_demands = readInput("Number of demands (10): ", 10, Int)
         iterations = readInput("Iterations (10): ", 10, Int)
@@ -99,7 +99,7 @@ Base.@ccallable function julia_main()::String
         topologyCutoffError(topology, num_demands, iterations, cutoffs, demand_downscale=1.0, weibull_scale=weibull_scale)
     elseif experiment == "path_selection"
         topologies = split(readInput("Topologies (B4,IBM): ", "B4,IBM", String), ",")
-        demand_downscales = map(i -> parse(Float64, i), split(readInput("Demand downscales (4000,4000): ", "4000,4000", String), ","))        
+        demand_downscales = map(i -> parse(Float64, i), split(readInput("Demand downscales (4000,4000): ", "4000,4000", String), ","))
         availabilities = map(i -> parse(Float64, i), split(readInput("Availabilities (.9,.92,.94,.96,.98,.99): ", ".9,.92,.94,.96,.98,.99", String), ","))
         cutoff = readInput("Cutoff (0.001): ", 0.0001, Float64)
         num_demands = readInput("Number of demands (6): ", 6, Int)
@@ -108,7 +108,7 @@ Base.@ccallable function julia_main()::String
         pathSelection(topologies, demand_downscales, paths, num_demands, availabilities, cutoff, ksp=ksp, plot=plot)
     elseif experiment == "probability_noise"
         topologies = split(readInput("Topologies (B4): ", "B4", String), ",")
-        demand_downscales = map(i -> parse(Float64, i), split(readInput("Demand downscales (1): ", "1", String), ","))        
+        demand_downscales = map(i -> parse(Float64, i), split(readInput("Demand downscales (1): ", "1", String), ","))
         cutoff = readInput("Cutoff (0.00001): ", 0.00001, Float64)
         num_demands = readInput("Number of demands (2): ", 2, Int)
         iterations = readInput("Iterations (20): ", 20, Int)
@@ -116,7 +116,7 @@ Base.@ccallable function julia_main()::String
         probabilityNoise(topologies, demand_downscales, num_demands, iterations, cutoff, noises, paths="SMORE", weibull_scale=.001, add_noise="EVENTS", plot=plot)
     elseif experiment == "throughput"
         topologies = split(readInput("Topologies (B4,ATT): ", "B4,ATT", String), ",")
-        demand_downscales = map(i -> parse(Float64, i), split(readInput("Demand downscales (1,1): ", "1,1", String), ","))        
+        demand_downscales = map(i -> parse(Float64, i), split(readInput("Demand downscales (1,1): ", "1,1", String), ","))
         algorithms = split(readInput("Algorithms (TEAVAR,SMORE,ECMP,FFC): ", "TEAVAR,SMORE,ECMP,FFC", String), ",")
         availabilities = map(i -> parse(Float64, i), split(readInput("Availabilities (.9,.95,.99,.999,.9999): ", ".9,.95,.99,.999,.9999", String), ","))
         cutoff = readInput("Cutoff (0.00001): ", 0.00001, Float64)
@@ -124,7 +124,7 @@ Base.@ccallable function julia_main()::String
         iterations = readInput("Iterations (4): ", 4, Int)
         getThroughputGraphs(algorithms, topologies, demand_downscales, num_demands, iterations, availabilities, cutoff, teavar_paths="KSP", weibull_scale=.0001, plot=plot)
     elseif experiment == "utilization"
-        topology = readInput("Topology (B4): ", "B4", String) 
+        topology = readInput("Topology (B4): ", "B4", String)
         availabilities = map(i -> parse(Float64, i), split(readInput("Availabilities (.99,.999,.9999): ", ".99,.999,.9999", String), ","))
         cutoff = readInput("Cutoff (0.00001): ", 0.00001, Float64)
         num_demands = readInput("Number of demands (3): ", 3, Int)
