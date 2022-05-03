@@ -1,22 +1,31 @@
-import Pkg
-Pkg.add("DelimitedFiles")
-Pkg.add("ProgressMeter")
-Pkg.add("Distributions")
-Pkg.add("Combinatorics")
-
 using Distributions, DelimitedFiles, ProgressMeter, Combinatorics
 
 ####################################################################################
 #######################  Print Results of TEAVAR formulation  ########################
 ####################################################################################
 
-function printResults(o, alpha, a, u, umax, edges, scenarios, T, Tf, L, capacity; verbose=false, utilization=true)
+function printResults(
+    o,
+    alpha,
+    a,
+    u,
+    umax,
+    edges,
+    scenarios,
+    T,
+    Tf,
+    L,
+    capacity,
+    flows;
+    verbose = false,
+    utilization = true,
+)
     println("Objective value: ", o)
     print("\n")
     println("------------------ Allocations ----------------------\n")
-    for i in 1:size(a,1)
-        for j in 1:size(a,2)
-            println("Flow ",i, ", tunnel ", j, " allocated : ", a[i,j])
+    for i = 1:size(a, 1)
+        for j = 1:size(a, 2)
+            println("Flow ", flows[i], ", tunnel ", T[j], " allocated : ", a[i, j])
             print("Edges in use: ")
             for e in T[Tf[i][j]]
                 print(edges[e])
@@ -26,22 +35,22 @@ function printResults(o, alpha, a, u, umax, edges, scenarios, T, Tf, L, capacity
     end
     if verbose
         println("--------------- Loss Breakdown ---------------------\n")
-        for s in 1:size(umax,1)
+        for s = 1:size(umax, 1)
             if s == 1
                 println("Scenario 1: ", scenarios[s])
             else
                 println("Scenario ", s, ": ", scenarios[s])
             end
             print("Edges: ")
-            for i in 1:size(scenarios[s],1)
+            for i = 1:size(scenarios[s], 1)
                 if scenarios[s][i] == 0.0
                     print(edges[i], " ")
                 end
             end
             print("go down\n\n")
 
-            for f in 1:size(u,2)
-                println("Loss on flow ", f, " = ", u[s,f])
+            for f = 1:size(u, 2)
+                println("Loss on flow ", flows[f], " = ", u[s, f])
             end
             println("umax = ", umax[s])
             println("Max loss = ", umax[s] + alpha)
@@ -50,13 +59,13 @@ function printResults(o, alpha, a, u, umax, edges, scenarios, T, Tf, L, capacity
     end
     println("------------------------------------------------\n")
     if utilization
-        for e in 1:size(edges,1)
+        for e = 1:size(edges, 1)
             println("EDGE: ", e, " : ", edges[e])
             println("capacity: ", capacity[e])
             s = 0
-            for f in 1:size(a,1)
-                for t in 1:size(a,2)
-                    s += a[f,t] * L[Tf[f][t],e]
+            for f = 1:size(a, 1)
+                for t = 1:size(a, 2)
+                    s += a[f, t] * L[Tf[f][t], e]
                 end
             end
             println("used: ", s)
@@ -71,14 +80,14 @@ end
 ###################  Compute all possible scenario bitmaps  ########################
 ####################################################################################
 
-function kScenarios(nedges, k, probabilities; first=true)
+function kScenarios(nedges, k, probabilities; first = true)
     scenarios = []
     if first
         scenario = ones(nedges)
         push!(scenarios, scenario)
     end
-    for i in 1:k
-        for bits in collect(combinations(1:nedges,i))
+    for i = 1:k
+        for bits in collect(combinations(1:nedges, i))
             s = ones(nedges)
             for bit in bits
                 s[bit] = 0
@@ -90,33 +99,34 @@ function kScenarios(nedges, k, probabilities; first=true)
     return scenarios, probs
 end
 
-function allScenarios(nedges, probabilities; first=true)
+function allScenarios(nedges, probabilities; first = true)
     scenarios = []
     probs = []
     if first
         scenario = ones(nedges)
         push!(scenarios, scenario) #ADD SCENARIO NO FAILURES
         prob = 1
-        for i in 1:length(scenario)
-            prob *= (1 - scenario[i]) * probabilities[i] + scenario[i] * (1 - probabilities[i])
+        for i = 1:length(scenario)
+            prob *=
+                (1 - scenario[i]) * probabilities[i] + scenario[i] * (1 - probabilities[i])
         end
         push!(probs, prob)
     end
-    p = Progress(nedges, .1, "Computing all scenarios...", 50)
-    for i in 1:nedges
-        for bits in collect(combinations(1:nedges,i))
+    p = Progress(nedges, 0.1, "Computing all scenarios...", 50)
+    for i = 1:nedges
+        for bits in collect(combinations(1:nedges, i))
             s = ones(nedges)
             for bit in bits
                 s[bit] = 0
             end
             prob = 1
-            for i in 1:length(s)
+            for i = 1:length(s)
                 prob *= (1 - s[i]) * probabilities[i] + s[i] * (1 - probabilities[i])
             end
             push!(probs, prob)
             push!(scenarios, s)
         end
-        next!(p, showvalues = [(:edges,"$(i)/$(nedges)")])
+        next!(p, showvalues = [(:edges, "$(i)/$(nedges)")])
     end
     return scenarios, probs ./ sum(probs)
 end
@@ -128,10 +138,12 @@ end
 function getProbabilities(scenarios, probabilities)
     nscenarios = size(scenarios, 1)
     p = []
-    for s in 1:nscenarios
+    for s = 1:nscenarios
         prob = 1
-        for i in 1:size(scenarios[s],1)
-            prob *= (1 - scenarios[s][i]) * probabilities[i] + scenarios[s][i] * (1 - probabilities[i])
+        for i = 1:size(scenarios[s], 1)
+            prob *=
+                (1 - scenarios[s][i]) * probabilities[i] +
+                scenarios[s][i] * (1 - probabilities[i])
         end
         push!(p, prob)
     end
@@ -143,12 +155,22 @@ end
 ####################  Compute all scenarios above a threshold  #####################
 ####################################################################################
 
-function subScenariosRecursion(original, cutoff, remaining=[], offset=0, partial=[], scenarios=[], probabilities=[]; progress=nothing)
-    if (size(partial,1) == 0)   #first
-        push!(scenarios, ones(size(original,1)))
+function subScenariosRecursion(
+    original,
+    cutoff,
+    remaining = [],
+    offset = 0,
+    partial = [],
+    scenarios = [],
+    probabilities = [];
+    progress = nothing,
+)
+    if (size(partial, 1) == 0)   #first
+        push!(scenarios, ones(size(original, 1)))
         push!(probabilities, prod(1 .- original))
         remaining = original
-    else (size(partial,1) > 0)
+    else
+        (size(partial, 1) > 0)
         probs = 1 .- original
         bitmap = ones(size(original, 1))   #create bitmap
         for index in partial
@@ -157,7 +179,14 @@ function subScenariosRecursion(original, cutoff, remaining=[], offset=0, partial
         end
         product = prod(probs)
         if progress != nothing
-            ProgressMeter.next!(progress, showvalues = [(:cutoff,cutoff), (:scenarios_added,length(probabilities)), (:last, product)])
+            ProgressMeter.next!(
+                progress,
+                showvalues = [
+                    (:cutoff, cutoff),
+                    (:scenarios_added, length(probabilities)),
+                    (:last, product),
+                ],
+            )
         end
         if product >= cutoff
             push!(scenarios, bitmap)
@@ -167,18 +196,27 @@ function subScenariosRecursion(original, cutoff, remaining=[], offset=0, partial
         end
     end
 
-    for i in 1:size(remaining,1)
-        offset = size(original,1) - size(remaining,1)
+    for i = 1:size(remaining, 1)
+        offset = size(original, 1) - size(remaining, 1)
         n = offset + i
-        subScenariosRecursion(original, cutoff, remaining[i+1:end], offset, vcat(partial, [n]), scenarios, probabilities, progress=progress)
+        subScenariosRecursion(
+            original,
+            cutoff,
+            remaining[i+1:end],
+            offset,
+            vcat(partial, [n]),
+            scenarios,
+            probabilities,
+            progress = progress,
+        )
     end
     return scenarios, probabilities
 end
 
-function subScenarios(original, cutoff; first=true, last=true, progress=true)
+function subScenarios(original, cutoff; first = true, last = true, progress = true)
     p = ProgressMeter.ProgressUnknown("Computing scenarios cutoff=$(cutoff)...")
     if progress
-        scenarios, probabilities = subScenariosRecursion(original, cutoff, progress=p)
+        scenarios, probabilities = subScenariosRecursion(original, cutoff, progress = p)
     else
         scenarios, probabilities = subScenariosRecursion(original, cutoff)
     end
@@ -201,13 +239,11 @@ end
 ####################  Weibull Distribution probabilities  #######################
 ####################################################################################
 
-function weibullProbs(num; shape=.8, scale=.0001)
+function weibullProbs(num; shape = 0.8, scale = 0.0001)
     w = Distributions.Weibull(shape, scale)
     probs = []
-    for i in 1:num
+    for i = 1:num
         push!(probs, rand(w))
     end
     return probs
 end
-
-
